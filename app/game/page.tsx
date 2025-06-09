@@ -4,7 +4,7 @@ import { useEffect } from "react";
 export default function GamePage() {
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "/game/main.js"; // This points to your built game file
+    script.src = "/game/main.js";
     script.async = true;
     document.body.appendChild(script);
 
@@ -16,7 +16,7 @@ export default function GamePage() {
   return (
     <div style={{ textAlign: "center" }}>
       <h1>Farmverse</h1>
-      <canvas id="farmverse-game" width="800" height="600" />
+      <canvas id="farmverse-game" width="800" height="600"></canvas>
     </div>
   );
 }
