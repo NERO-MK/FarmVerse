@@ -1,22 +1,19 @@
-"use client";
-import { useEffect } from "react";
+// app/game/page.tsx
+
+'use client';
 
 export default function GamePage() {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "/game/main.js"; // Served from /public/game/main.js
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
   return (
-    <div style={{ textAlign: "center" }}>
-      <h1>Farmverse</h1>
-      <div id="game" />
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <iframe
+        src="/phaser/index.html"
+        style={{
+          width: '100%',
+          height: '100%',
+          border: 'none',
+        }}
+        title="FarmVerse Game"
+      />
     </div>
   );
 }
