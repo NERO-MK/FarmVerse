@@ -8,7 +8,7 @@ import {
   canUnlockLand,
   unlockLand,
   setLandCooldown
-} from "./LandSystem";
+} from "./landSystem";
 
 const TILE_SIZE = 64;
 const GRID_ROWS = 5;

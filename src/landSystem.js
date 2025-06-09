@@ -1,97 +1,99 @@
-// File: src/LandSystem.js
+// src/landSystem.js
 
-const BASE_LAND_ID = 1;
-const MAX_LAND_ID = 30;
+// Base land IDs (always unlocked)
+const BASE_LAND_IDS = [1, 2, 3];
 
-// Default unlocked lands
-const defaultUnlocked = [1, 2, 3];
+// Land requirements configuration
+const LAND_REQUIREMENTS = {
+  4: { level: 5, cooldown: 2 * 60 * 60 * 1000 },      // 2h
+  5: { level: 6, cooldown: 2 * 60 * 60 * 1000 },
+  6: { level: 7, cooldown: 2 * 60 * 60 * 1000 },
+  7: { level: 8, cooldown: 2 * 60 * 60 * 1000 },
+  8: { level: 9, cooldown: 2 * 60 * 60 * 1000 },
+  9: { level: 10, cooldown: 2 * 60 * 60 * 1000 },
 
-// Dummy character and resource data (replace with real game state later)
-const playerData = {
-  level: parseInt(localStorage.getItem("characterLevel")) || 1,
-  resources: {
-    crop: 100,
-    wood: 50,
-    stone: 30,
-    iron: 20,
-    coin: 1000,
-    TOKEN: 10
-  }
+  10: { level: 11, cooldown: 4 * 60 * 60 * 1000 },     // 4h
+  11: { level: 12, cooldown: 4 * 60 * 60 * 1000 },
+  12: { level: 13, cooldown: 4 * 60 * 60 * 1000 },
+  13: { level: 14, cooldown: 4 * 60 * 60 * 1000 },
+  14: { level: 15, cooldown: 4 * 60 * 60 * 1000 },
+  15: { level: 16, cooldown: 4 * 60 * 60 * 1000 },
+  16: { level: 17, cooldown: 4 * 60 * 60 * 1000 },
+
+  17: { level: 18, cooldown: 8 * 60 * 60 * 1000 },     // 8h
+  18: { level: 20, cooldown: 8 * 60 * 60 * 1000 },
+  19: { level: 22, cooldown: 8 * 60 * 60 * 1000 },
+  20: { level: 24, cooldown: 8 * 60 * 60 * 1000 },
+  21: { level: 26, cooldown: 8 * 60 * 60 * 1000 },
+  22: { level: 28, cooldown: 8 * 60 * 60 * 1000 },
+  23: { level: 30, cooldown: 8 * 60 * 60 * 1000 },
+  24: { level: 32, cooldown: 8 * 60 * 60 * 1000 },
+  25: { level: 34, cooldown: 8 * 60 * 60 * 1000 },
+
+  26: { level: 40, cooldown: 24 * 60 * 60 * 1000 },    // 24h
+  27: { level: 45, cooldown: 24 * 60 * 60 * 1000 },
+  28: { level: 50, cooldown: 24 * 60 * 60 * 1000 },
+  29: { level: 55, cooldown: 24 * 60 * 60 * 1000 },
+  30: { level: 60, cooldown: 24 * 60 * 60 * 1000 },
 };
 
-// Land unlock requirements
+// Get unlocked land IDs from localStorage
+function getUnlockedLandIds() {
+  const stored = localStorage.getItem('unlockedLandIds');
+  const parsed = stored ? JSON.parse(stored) : [];
+  return [...new Set([...BASE_LAND_IDS, ...parsed])];
+}
+
+// Check if a land is unlocked
+function isLandUnlocked(landId) {
+  return getUnlockedLandIds().includes(landId);
+}
+
+// Get requirements for a land
 function getLandRequirements(landId) {
-  return {
-    level: Math.max(1, landId + 5), // e.g. Land 4 needs level 9
-    cost: {
-      crop: landId * 5,
-      wood: landId * 3,
-      stone: landId * 2,
-      iron: landId,
-      coin: landId * 100,
-      TOKEN: Math.floor(landId / 2)
-    },
-    cooldownHours: 2 + landId * 4 // e.g. land 4 = 18 hrs, land 10 = 42 hrs
-  };
+  return LAND_REQUIREMENTS[landId] || null;
 }
 
-// Unlocked land from localStorage
-export function getUnlockedLandIds() {
-  return JSON.parse(localStorage.getItem("unlockedLands")) || defaultUnlocked;
+// Get remaining cooldown time for a land
+function getRemainingCooldown(landId) {
+  const unlockTime = localStorage.getItem(`unlockTime-${landId}`);
+  const req = getLandRequirements(landId);
+  if (!unlockTime || !req) return 0;
+
+  const elapsed = Date.now() - Number(unlockTime);
+  const remaining = req.cooldown - elapsed;
+  return remaining > 0 ? remaining : 0;
 }
 
-export function isLandUnlocked(id) {
-  return getUnlockedLandIds().includes(id);
+// Check if a land can be unlocked
+function canUnlockLand(landId, playerLevel) {
+  if (isLandUnlocked(landId)) return false;
+  const req = getLandRequirements(landId);
+  if (!req || playerLevel < req.level) return false;
+  return getRemainingCooldown(landId) <= 0;
 }
 
-// Cooldown
-export function getRemainingCooldown(id) {
-  const unlockTime = parseInt(localStorage.getItem(`cooldown_${id}`)) || 0;
-  const now = Date.now();
-  const remaining = unlockTime - now;
-
-  if (remaining <= 0) return 0;
-
-  const hours = Math.floor(remaining / 3600000);
-  const minutes = Math.floor((remaining % 3600000) / 60000);
-  const seconds = Math.floor((remaining % 60000) / 1000);
-
-  return `${hours}h ${minutes}m ${seconds}s`;
-}
-
-export function setLandCooldown(id, hours) {
-  const unlockTime = Date.now() + hours * 60 * 60 * 1000;
-  localStorage.setItem(`cooldown_${id}`, unlockTime.toString());
-}
-
-// Check if user can unlock
-export function canUnlockLand(id) {
-  const requirements = getLandRequirements(id);
-  if (playerData.level < requirements.level) return false;
-
-  for (const key in requirements.cost) {
-    if ((playerData.resources[key] || 0) < requirements.cost[key]) return false;
-  }
-
-  return true;
-}
-
-// Unlock land
-export function unlockLand(id) {
+// Unlock land and store in localStorage
+function unlockLand(landId) {
   const unlocked = getUnlockedLandIds();
-  if (!unlocked.includes(id)) {
-    unlocked.push(id);
-    localStorage.setItem("unlockedLands", JSON.stringify(unlocked));
+  if (!unlocked.includes(landId)) {
+    unlocked.push(landId);
+    localStorage.setItem('unlockedLandIds', JSON.stringify(unlocked));
   }
-
-  const requirements = getLandRequirements(id);
-  setLandCooldown(id, requirements.cooldownHours);
-
-  // Deduct resources
-  for (const key in requirements.cost) {
-    playerData.resources[key] -= requirements.cost[key];
-  }
-
-  // Optional: Save deducted values
-  console.log(`Land ${id} unlocked. Remaining resources:`, playerData.resources);
 }
+
+// Set the cooldown timer for a land unlock
+function setLandCooldown(landId) {
+  localStorage.setItem(`unlockTime-${landId}`, Date.now().toString());
+}
+
+// Export all functions
+export {
+  getUnlockedLandIds,
+  isLandUnlocked,
+  getLandRequirements,
+  getRemainingCooldown,
+  canUnlockLand,
+  unlockLand,
+  setLandCooldown,
+};
