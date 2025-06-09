@@ -9,7 +9,7 @@ const config = {
   width: 800,
   height: 600,
   backgroundColor: '#c2f0c2',
-  parent: 'game', // make sure there's a <div id="game"> in your page
+  parent: 'game',
   scene: {
     preload,
     create,
@@ -27,10 +27,10 @@ function create() {
     fill: '#000'
   });
 
-  // === Basic Land Layout ===
   const startX = 150;
   const startY = 100;
 
+  // 3x3 Farm Plots
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
       const x = startX + col * TILE_SIZE;
@@ -47,7 +47,7 @@ function create() {
       tile.on('pointerdown', () => {
         const now = this.time.now;
         if (!tile.isPlanted || now - tile.plantedAt >= tile.cooldown) {
-          tile.setFillStyle(0x228B22); // planted
+          tile.setFillStyle(0x228B22); // green = planted
           tile.isPlanted = true;
           tile.plantedAt = now;
         }
@@ -65,10 +65,9 @@ function create() {
     [480, 280],
     [620, 300],
   ];
-
   for (let [x, y] of treePositions) {
-    this.add.circle(x, y, 20, 0x006400);
-    this.add.text(x - 10, y - 10, '🌳', { font: '16px Arial', fill: '#000' });
+    const tree = this.add.circle(x, y, 20, 0x006400);
+    this.add.text(x - 10, y - 10, '🌳', { font: '16px Arial' });
   }
 
   // Add Stones
@@ -77,18 +76,17 @@ function create() {
     [180, 420],
     [240, 410],
   ];
-
   for (let [x, y] of stonePositions) {
-    this.add.circle(x, y, 16, 0x555555);
-    this.add.text(x - 10, y - 10, '🪨', { font: '16px Arial', fill: '#000' });
+    const stone = this.add.circle(x, y, 16, 0x555555);
+    this.add.text(x - 10, y - 10, '🪨', { font: '16px Arial' });
   }
 
   // Add Iron
   this.add.circle(320, 400, 16, 0xC0C0C0);
-  this.add.text(310, 390, '⛓️', { font: '16px Arial', fill: '#000' });
+  this.add.text(310, 390, '⛓️', { font: '16px Arial' });
 
   // Instructions
-  this.add.text(100, 550, '🧑‍🌾 Tap brown tiles to plant. Green = growing.', {
+  this.add.text(100, 570, '🧑‍🌾 Tap brown tiles to plant crops. They reset after cooldown.', {
     font: '16px Arial',
     fill: '#333'
   });
@@ -98,7 +96,7 @@ function update() {
   const now = this.time.now;
   for (let tile of plots) {
     if (tile.isPlanted && now - tile.plantedAt >= tile.cooldown) {
-      tile.setFillStyle(0x8B4513);
+      tile.setFillStyle(0x8B4513); // back to brown = ready again
       tile.isPlanted = false;
     }
   }
