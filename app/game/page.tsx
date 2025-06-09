@@ -4,7 +4,7 @@ import { useEffect } from "react";
 export default function GamePage() {
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "/game/main.js";
+    script.src = "/game/main.js"; // Load built game script
     script.async = true;
     document.body.appendChild(script);
 
